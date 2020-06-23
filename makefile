@@ -1,4 +1,7 @@
 default:
+
+go:
+	./scripts/build.sh
 start:
 	./scripts/start.sh
 dump:

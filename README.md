@@ -22,11 +22,12 @@ Bootstrap
 Chart
 ```
 
-# 测试
+## 测试
 代码覆盖率使用 jacoco
 - 使用 make 快捷指令
 ```
 scripts 目录为使用脚本
+├── build.sh
 ├── clean.sh
 ├── dump.sh
 ├── gen.sh
@@ -38,3 +39,13 @@ jacoco 目录为使用的lib文件
     ├── jacocoagent.jar
     ├── jacococli.jar
 ```
+
+### 结合 jenkins 构建自动测试代码覆盖率报告
+- git clone repo
+- 自由风格项目下配置 shell
+    ```
+    make go
+    make start
+    make dump
+    ```
+- 添加 Post-build Actions，Record JaCoCo coverage report。配置 classes， sources 路径。
