@@ -29,3 +29,17 @@
 .vscode/
 
 *.class
+
+jacoco/*
+out.log
+
+apitest/reports/*
+__pycache__/*
+*.pyc
+.python-version
+apitest/logs/*
+apitest/testcases/*.py
+
+reports/*
+
+uitest/target/*

@@ -1,0 +1,128 @@
+config:
+    name: with_backend_data_request
+    base_url: "${base_url()}"
+    verify: false
+    parameters:
+        username-password: ${parameterize(data/account.csv)}
+
+teststeps:
+-
+    name: get login session
+    testcase: testcases/get_login_session.yml
+    export:
+        - login_session
+
+-   name: /index.html
+    request:
+        headers:
+            Cookie: SESSION=$login_session
+        method: GET
+        url: /index.html
+    validate:
+        - eq: ["status_code", 200]
+
+-   name:  get vote display
+    request:
+        headers:
+            Cookie: SESSION=$login_session
+        method: GET
+        url: /voter/display
+    extract:
+        csrf_token: headers."X-CSRF-TOKEN"
+    validate:
+        - eq: ["status_code", 200]
+        - eq: ["body.code", "0"]
+        - ne: ["body.data", "[]"]
+
+-   name:  bad post vote play with error form values
+    request:
+        headers:
+            Cookie: SESSION=$login_session
+            Content-Type: "application/x-www-form-urlencoded"
+            X-CSRF-TOKEN: $csrf_token
+        data:
+            form: "${read_vote_db(1)}"
+        method: POST
+        url: /voter/play
+    validate:
+        - eq: ["status_code", 200]
+        - eq: ["body.code", "-2"]
+
+-   name:  bad post vote play with no exist item
+    request:
+        headers:
+            Cookie: SESSION=$login_session
+            Content-Type: "application/x-www-form-urlencoded"
+            X-CSRF-TOKEN: $csrf_token
+        data:
+            form: "${read_vote_db(2)}"
+        method: POST
+        url: /voter/play
+    validate:
+        - eq: ["status_code", 200]
+        - eq: ["body.code", "-2"]
+
+-   name:  normal post vote play
+    request:
+        headers:
+            Cookie: SESSION=$login_session
+            Content-Type: "application/x-www-form-urlencoded"
+            X-CSRF-TOKEN: $csrf_token
+        data:
+            form: "${read_vote_db(3)}"
+        method: POST
+        url: /voter/play
+    validate:
+        - eq: ["status_code", 200]
+        - eq: ["body.code", "0"]
+
+-   name:  nromal post vote play again
+    request:
+        headers:
+            Cookie: SESSION=$login_session
+            Content-Type: "application/x-www-form-urlencoded"
+            X-CSRF-TOKEN: $csrf_token
+        data:
+            form: "${read_vote_db(4)}"
+        method: POST
+        url: /voter/play
+    validate:
+        - eq: ["status_code", 200]
+        - eq: ["body.code", "-3"]
+
+-   name:  get vote display after voter play
+    request:
+        headers:
+            Cookie: SESSION=$login_session
+        method: GET
+        url: /voter/display
+    extract:
+        csrf_token: headers."X-CSRF-TOKEN"
+    validate:
+        - eq: ["status_code", 200]
+        - eq: ["body.code", "-3"]
+
+-   name:  get vote play
+    request:
+        headers:
+            Cookie: SESSION=$login_session
+            X-CSRF-TOKEN: $csrf_token
+        method: GET
+        url: /voter/play
+    validate:
+        - eq: ["status_code", 200]
+        - eq: ["body.code", "0"]
+        - ne: ["body.data", "[]"]
+
+-   name:  get csrf used by ajax
+    request:
+        headers:
+            Cookie: SESSION=$login_session
+        method: GET
+        url: /voter/csrftoken
+    extract:
+        data: body
+    validate:
+        - eq: ["status_code", 200]
+        - ne: [headers."X-CSRF-TOKEN", None]
+        - eq: ["${check_bytes($data)}", True]

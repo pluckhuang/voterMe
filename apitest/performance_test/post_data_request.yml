@@ -1,0 +1,47 @@
+config:
+    name: with_backend_data_request
+    base_url: "${base_url()}"
+    verify: false
+    weight: 4
+
+
+teststeps:
+-
+    name: get login session
+    testcase: performance_test/get_login_session.yml
+    export:
+        - login_session
+
+-   name: /index.html
+    request:
+        headers:
+            Cookie: SESSION=$login_session
+        method: GET
+        url: /index.html
+    validate:
+        - eq: ["status_code", 200]
+
+-   name:  get vote display
+    request:
+        headers:
+            Cookie: SESSION=$login_session
+        method: GET
+        url: /voter/display
+    extract:
+        csrf_token: headers."X-CSRF-TOKEN"
+    validate:
+        - eq: ["status_code", 200]
+        - ne: ["body.data", "[]"]
+
+-   name:  post vote play
+    request:
+        headers:
+            Cookie: SESSION=$login_session
+            Content-Type: "application/x-www-form-urlencoded"
+            X-CSRF-TOKEN: $csrf_token
+        data:
+            form: '[{"name":"1","value":"1"},{"name":"1","value":"2"},{"name":"2","value":"4"}]'
+        method: POST
+        url: /voter/play
+    validate:
+        - eq: ["status_code", 200]

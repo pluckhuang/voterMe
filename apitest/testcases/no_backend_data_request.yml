@@ -1,0 +1,26 @@
+config:
+    name: no_backend_data_request
+    base_url: "${base_url()}"
+    parameters:
+        username-password: ${parameterize(data/account.csv)}
+    verify: false
+
+teststeps:
+-
+    name: get login session
+    testcase: testcases/get_login_session.yml
+    export:
+        - login_session
+
+-   name:  get vote display
+    request:
+        headers:
+            Cookie: SESSION=$login_session
+        method: GET
+        url: /voter/display
+    extract:
+        csrf_token: headers."X-CSRF-TOKEN"
+    validate:
+        - eq: ["status_code", 200]
+        - eq: ["body.code", "0"]
+        - eq: ["body.data", []]
