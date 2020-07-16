@@ -49,3 +49,16 @@ jacoco 目录为使用的lib文件
     make dump
     ```
 - 添加 Post-build Actions，Record JaCoCo coverage report。配置 classes， sources 路径。
+
+
+### 本地机器直接获取报告
+- git clone repo
+- 依次执行 shell
+    ```
+    make go
+    make start
+    make runtest
+    make dump
+    make gen
+    ```
+    查看 ～/jacoco/report/index.html, 发现代码覆盖率不为100%, 删除无用代码并更新 project. 进入分支qa-1.

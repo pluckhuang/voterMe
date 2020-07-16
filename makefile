@@ -12,3 +12,5 @@ kill:
 	./scripts/kill.sh
 clean:
 	./scripts/clean.sh
+runtest:
+	./scripts/runtest.sh

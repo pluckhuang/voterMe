@@ -1,0 +1,83 @@
+config:
+    name: testcase description
+    variables: ${get_login_session()}
+    base_url: "http://test:8083"
+    verify: false
+
+teststeps:
+-   name: /index.html
+    request:
+        headers:
+            Cookie: SESSION=$login_session
+        method: GET
+        url: /index.html
+    validate:
+        - eq: ["status_code", 200]
+
+-   name:  get vote display
+    request:
+        headers:
+            Cookie: SESSION=$login_session
+        method: GET
+        url: /voter/display
+    extract:
+        csrf_token: headers."X-CSRF-TOKEN"
+    validate:
+        - eq: ["status_code", 200]
+        - eq: ["body.code", "0"]
+        - ne: ["body.data", "[]"]
+
+-   name:  post vote play
+    request:
+        headers:
+            Cookie: SESSION=$login_session
+            Content-Type: "application/x-www-form-urlencoded"
+            X-CSRF-TOKEN: $csrf_token
+        data:
+            form: '[{"name":"1","value":"1"},{"name":"1","value":"2"},{"name":"2","value":"4"}]'
+        method: POST
+        url: /voter/play
+    validate:
+        - eq: ["status_code", 200]
+        - eq: ["body.code", "0"]
+
+-   name:  post vote play again
+    request:
+        headers:
+            Cookie: SESSION=$login_session
+            Content-Type: "application/x-www-form-urlencoded"
+            X-CSRF-TOKEN: $csrf_token
+        data:
+            form: '[{"name":"1","value":"1"},{"name":"1","value":"2"},{"name":"2","value":"4"}]'
+        method: POST
+        url: /voter/play
+    validate:
+        - eq: ["status_code", 200]
+        - eq: ["body.code", "-3"]
+
+-   name:  get vote play
+    request:
+        headers:
+            Cookie: SESSION=$login_session
+            X-CSRF-TOKEN: $csrf_token
+        method: GET
+        url: /voter/play
+    validate:
+        - eq: ["status_code", 200]
+        - eq: ["body.code", "0"]
+        - ne: ["body.data", "[]"]
+
+
+-   name:  get csrf used by ajax
+    request:
+        headers:
+            Cookie: SESSION=$login_session
+        method: GET
+        url: /voter/csrftoken
+    extract:
+        data: body
+    validate:
+        - eq: ["status_code", 200]
+        - ne: [headers."X-CSRF-TOKEN", None]
+        - eq: ["${check_bytes($data)}", True]
+
