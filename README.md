@@ -61,4 +61,4 @@ jacoco 目录为使用的lib文件
     make dump
     make gen
     ```
-    查看 ～/jacoco/report/index.html, 发现代码覆盖率不为100%, 删除无用代码并更新 project. 进入分支qa-1.
+    查看 ～/jacoco/report/index.html.

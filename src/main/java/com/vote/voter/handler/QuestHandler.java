@@ -8,9 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -33,7 +31,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -68,20 +65,6 @@ public class QuestHandler {
         return "ok";
     }
 
-    @GetMapping(path = "/play1", produces = { "application/xml", "text/xml" }, consumes = MediaType.ALL_VALUE)
-    public @ResponseBody String getVoterPlay1() throws JsonProcessingException {
-
-        List<Object> ret = getCurrentVote();
-
-        Map<String, Object> res = Maps.newHashMap();
-
-        res.put("data", ret);
-        res.put("code", "0");
-
-        ObjectMapper xmlMapper = new XmlMapper();
-        return xmlMapper.writeValueAsString(res);
-    }
-
     @GetMapping(path = "/play") // Map ONLY GET Requests
     @JsonAnyGetter
     public @ResponseBody Map<String, Object> getVoterPlay() {
@@ -96,10 +79,6 @@ public class QuestHandler {
         return res;
     }
 
-    private void requestCallback() {
-        logger.info("do a request.");
-    }
-
     @PostMapping(path = "/play")
     @JsonAnyGetter
     @Transactional
@@ -110,11 +89,6 @@ public class QuestHandler {
         long userId = getUserIdByUserName(currentUsername);
 
         Map<String, Object> res = getRes(currentUsername, userId);
-
-        if (userId == 0) {
-            res.put("code", "-1");
-            return res;
-        }
 
         if (isVoted(userId) == true) {
             res.put("code", "-3");
@@ -236,7 +210,7 @@ public class QuestHandler {
 
             voteRepository.saveAll(voteList);
         } catch (Exception e) {
-            return -2;
+            ret = -2;
         }
 
         return ret;

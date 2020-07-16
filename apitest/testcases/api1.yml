@@ -55,6 +55,18 @@ teststeps:
         - eq: ["status_code", 200]
         - eq: ["body.code", "-3"]
 
+-   name:  get vote display after voter play
+    request:
+        headers:
+            Cookie: SESSION=$login_session
+        method: GET
+        url: /voter/display
+    extract:
+        csrf_token: headers."X-CSRF-TOKEN"
+    validate:
+        - eq: ["status_code", 200]
+        - eq: ["body.code", "-3"]
+
 -   name:  get vote play
     request:
         headers:
