@@ -29,3 +29,7 @@
 .vscode/
 
 *.class
+
+jacoco/*
+out.log
+apitest/*
