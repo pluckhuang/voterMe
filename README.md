@@ -61,4 +61,4 @@ jacoco 目录为使用的lib文件
     make dump
     make gen
     ```
-    查看 ～/jacoco/report/index.html, 发现代码覆盖率不为100%, 删除无用代码并更新 project. 进入分支qa-1.
+    再次查看 ～/jacoco/report/index.html. 根据代码覆盖率补全测试用例，make runtest, 使接口代码覆盖率达到100%。达到分支 qa-2
