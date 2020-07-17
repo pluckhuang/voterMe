@@ -32,4 +32,11 @@
 
 jacoco/*
 out.log
-apitest/*
+
+apitest/reports/*
+__pycache__/*
+*.pyc
+.python-version
+apitest/logs/*
+
+reports/*

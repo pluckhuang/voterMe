@@ -1,0 +1,33 @@
+config:
+    name: get_login_session
+    base_url: "${base_url()}"
+    verify: false
+    export: ["login_session"]
+
+teststeps:
+-   name:  login
+    request:
+        method: GET
+        url: /login
+    extract:
+        csrf_token: headers."X-CSRF-TOKEN"
+        session: cookies.SESSION
+    validate:
+        - eq: ["status_code", 200]
+
+-   name:  login index
+    request:
+        headers:
+            Cookie: SESSION=$session
+            Content-Type: application/x-www-form-urlencoded
+        method: POST
+        url: /index.html
+        params:
+            username: huang
+            password: 123321
+            _csrf: $csrf_token
+        allow_redirects: false
+    extract:
+        login_session: cookies.SESSION
+    validate:
+        - eq: ["status_code", 302]

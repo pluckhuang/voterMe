@@ -43,10 +43,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.addFilterAfter(new CsrfTokenGeneratorFilter(), CsrfFilter.class).authorizeRequests()
-                .antMatchers("/voter/play1").permitAll().antMatchers("/voter/display")
-                .hasAnyAuthority("ROLE_USER", "ROLE_ADMIN").antMatchers("/actuator/**").permitAll().anyRequest()
-                .authenticated().and().formLogin().loginProcessingUrl("/index.html")
-                .defaultSuccessUrl("/index.html", true).and().logout();
+                .antMatchers("/voter/display").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN").anyRequest().authenticated()
+                .and().formLogin().loginProcessingUrl("/index.html").defaultSuccessUrl("/index.html", true).and()
+                .logout();
 
         // http.headers().addHeaderWriter(new
         // StaticHeadersWriter("Content-Security-Policy",
