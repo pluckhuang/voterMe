@@ -1,10 +1,17 @@
 config:
-    name: testcase description
-    variables: ${get_login_session()}
-    base_url: "http://test:8083"
+    name: with_backend_data_request
+    base_url: "${base_url()}"
     verify: false
+    parameters:
+        username-password: ${parameterize(data/account.csv)}
 
 teststeps:
+-
+    name: get login session
+    testcase: testcases/get_login_session.yml
+    export:
+        - login_session
+
 -   name: /index.html
     request:
         headers:
@@ -27,28 +34,56 @@ teststeps:
         - eq: ["body.code", "0"]
         - ne: ["body.data", "[]"]
 
--   name:  post vote play
+-   name:  bad post vote play with error form values
     request:
         headers:
             Cookie: SESSION=$login_session
             Content-Type: "application/x-www-form-urlencoded"
             X-CSRF-TOKEN: $csrf_token
         data:
-            form: '[{"name":"1","value":"1"},{"name":"1","value":"2"},{"name":"2","value":"4"}]'
+            form: "${read_vote_db(1)}"
+        method: POST
+        url: /voter/play
+    validate:
+        - eq: ["status_code", 200]
+        - eq: ["body.code", "-2"]
+
+-   name:  bad post vote play with no exist item
+    request:
+        headers:
+            Cookie: SESSION=$login_session
+            Content-Type: "application/x-www-form-urlencoded"
+            X-CSRF-TOKEN: $csrf_token
+        data:
+            form: "${read_vote_db(2)}"
+        method: POST
+        url: /voter/play
+    validate:
+        - eq: ["status_code", 200]
+        - eq: ["body.code", "-2"]
+
+-   name:  normal post vote play
+    request:
+        headers:
+            Cookie: SESSION=$login_session
+            Content-Type: "application/x-www-form-urlencoded"
+            X-CSRF-TOKEN: $csrf_token
+        data:
+            form: "${read_vote_db(3)}"
         method: POST
         url: /voter/play
     validate:
         - eq: ["status_code", 200]
         - eq: ["body.code", "0"]
 
--   name:  post vote play again
+-   name:  nromal post vote play again
     request:
         headers:
             Cookie: SESSION=$login_session
             Content-Type: "application/x-www-form-urlencoded"
             X-CSRF-TOKEN: $csrf_token
         data:
-            form: '[{"name":"1","value":"1"},{"name":"1","value":"2"},{"name":"2","value":"4"}]'
+            form: "${read_vote_db(4)}"
         method: POST
         url: /voter/play
     validate:
@@ -79,7 +114,6 @@ teststeps:
         - eq: ["body.code", "0"]
         - ne: ["body.data", "[]"]
 
-
 -   name:  get csrf used by ajax
     request:
         headers:
@@ -92,4 +126,3 @@ teststeps:
         - eq: ["status_code", 200]
         - ne: [headers."X-CSRF-TOKEN", None]
         - eq: ["${check_bytes($data)}", True]
-

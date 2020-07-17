@@ -30,7 +30,6 @@ import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -45,8 +44,8 @@ public class QuestHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(QuestHandler.class);
 
-    @Autowired
-    private Environment env;
+    // @Autowired
+    // private Environment env;
 
     @Autowired
     private QuestRepository questRepository;
@@ -84,7 +83,7 @@ public class QuestHandler {
     @Transactional
     public @ResponseBody Map<String, Object> postVoterPlay(@RequestParam String form, Principal principal) {
 
-        String currentUsername = getCurrentUsername(principal);
+        String currentUsername = principal.getName();
 
         long userId = getUserIdByUserName(currentUsername);
 
@@ -104,10 +103,6 @@ public class QuestHandler {
         return res;
     }
 
-    private String getCurrentUsername(Principal principal) {
-        return (principal != null) ? principal.getName() : "";
-    }
-
     private Map<String, Object> getRes(String currentUsername, Long userId) {
 
         Map<String, Object> res = Maps.newHashMap();
@@ -125,7 +120,7 @@ public class QuestHandler {
 
         Map<String, Object> res = Maps.newHashMap();
 
-        if (isVoted(getUserIdByUserName(getCurrentUsername(principal)))) {
+        if (isVoted(getUserIdByUserName(principal.getName()))) {
             res.put("code", "-3");
             res.put("data", getCurrentVote());
             return res;
@@ -155,17 +150,6 @@ public class QuestHandler {
             questList.add(questMap);
         }
 
-        // RestTemplate restTemplate = new RestTemplate();
-
-        // String url = env.getProperty("getUrl");
-        // checkNotNull(url, "url, null pointer");
-
-        // String getReq = restTemplate.getForObject(url, String.class);
-        // Object obj = new JSONParser().parse(getReq);
-        // // typecasting obj to JSONObject
-        // JSONObject jo = (JSONObject) obj;
-
-        // res.put("getReq", jo);
         res.put("code", "0");
         res.put("data", questList);
 
@@ -192,6 +176,38 @@ public class QuestHandler {
         return userRepository.getUserIdByName(username);
     }
 
+    private int checkFormValue(List<VoteFormUnit> myObjects) {
+        HashSet<Long> _questIds = Sets.newHashSet();
+        HashSet<Long> _itemsIds = Sets.newHashSet();
+
+        for (VoteFormUnit vote : myObjects) {
+            Long questId = Long.parseLong(vote.getName(), 10);
+            Long itemId = Long.parseLong(vote.getValue(), 10);
+            _questIds.add(questId);
+            _itemsIds.add(itemId);
+        }
+
+        Iterable<Quest> _questList = questRepository.findAll();
+        HashSet<Long> questIds = Sets.newHashSet();
+        for (Quest quest : _questList) {
+            questIds.add(quest.getId());
+        }
+
+        Iterable<Item> _itemList = itemRepository.findAll();
+        HashSet<Long> itemIds = Sets.newHashSet();
+        for (Item item : _itemList) {
+            itemIds.add(item.getId());
+        }
+
+        int ret;
+        if (questIds.containsAll(_questIds) && itemIds.containsAll(_itemsIds)) {
+            ret = 0;
+        } else {
+            ret = -2;
+        }
+        return ret;
+    }
+
     private int saveVote(Long userId, String form) {
 
         int ret = 0;
@@ -199,20 +215,21 @@ public class QuestHandler {
 
         try {
             List<VoteFormUnit> myObjects = Arrays.asList(mapper.readValue(form, VoteFormUnit[].class));
-            List<Vote> voteList = Lists.newArrayList();
+            ret = checkFormValue(myObjects);
+            if (ret == 0) {
+                List<Vote> voteList = Lists.newArrayList();
 
-            for (VoteFormUnit vote : myObjects) {
-                Long questId = Long.parseLong(vote.getName(), 10);
-                Long itemId = Long.parseLong(vote.getValue(), 10);
-                Vote voteInfo = new Vote(userId, questId, itemId);
-                voteList.add(voteInfo);
+                for (VoteFormUnit vote : myObjects) {
+                    Long questId = Long.parseLong(vote.getName(), 10);
+                    Long itemId = Long.parseLong(vote.getValue(), 10);
+                    Vote voteInfo = new Vote(userId, questId, itemId);
+                    voteList.add(voteInfo);
+                }
+                voteRepository.saveAll(voteList);
             }
-
-            voteRepository.saveAll(voteList);
         } catch (Exception e) {
             ret = -2;
         }
-
         return ret;
     }
 
@@ -228,11 +245,9 @@ public class QuestHandler {
 
         HashSet<Long> questIds = Sets.newHashSet();
 
-        if (voteList != null) {
-            for (Vote vote : voteList) {
-                voteResult.add(vote.getItemId());
-                questIds.add(vote.getQuestId());
-            }
+        for (Vote vote : voteList) {
+            voteResult.add(vote.getItemId());
+            questIds.add(vote.getQuestId());
         }
 
         return getDisplayList(voteResult, questIds);
@@ -246,26 +261,23 @@ public class QuestHandler {
 
         List<Object> displayList = Lists.newArrayList();
 
-        if (_questList != null) {
+        for (Quest quest : _questList) {
 
-            for (Quest quest : _questList) {
+            Map<String, Object> questMap = Maps.newHashMap();
+            questMap.put("id", quest.getId());
+            questMap.put("title", quest.getTitle());
 
-                Map<String, Object> questMap = Maps.newHashMap();
-                questMap.put("id", quest.getId());
-                questMap.put("title", quest.getTitle());
+            List<Object> itemList = Lists.newArrayList();
+            for (Item item : itemMutil.get(quest.getId())) {
 
-                List<Object> itemList = Lists.newArrayList();
-                for (Item item : itemMutil.get(quest.getId())) {
-
-                    Map<String, Object> itemMap = Maps.newHashMap();
-                    itemMap.put("itemId", item.getId().toString());
-                    itemMap.put("itemContent", item.getContent());
-                    itemMap.put("voteCount", voteResult.count(item.getId()));
-                    itemList.add(itemMap);
-                }
-                questMap.put("itemList", itemList);
-                displayList.add(questMap);
+                Map<String, Object> itemMap = Maps.newHashMap();
+                itemMap.put("itemId", item.getId().toString());
+                itemMap.put("itemContent", item.getContent());
+                itemMap.put("voteCount", voteResult.count(item.getId()));
+                itemList.add(itemMap);
             }
+            questMap.put("itemList", itemList);
+            displayList.add(questMap);
         }
         return displayList;
     }

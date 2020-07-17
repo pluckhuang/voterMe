@@ -2,7 +2,7 @@
 
 # start javaagent
 
-SERVER_PORT=8083
+SERVER_PORT=8080
 
 make kill
 

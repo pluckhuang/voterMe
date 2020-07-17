@@ -1,8 +1,9 @@
 import time
-import re
-import requests
+import json
+import os
 
 from httprunner import __version__
+from data.vote_play_db import data
 
 
 def get_httprunner_version():
@@ -17,28 +18,15 @@ def sleep(n_secs):
     time.sleep(n_secs)
 
 
-def _get_csrf_and_session():
-    url = "http://test:8083/login"
-    response = requests.get(url)
-    return {
-        "csrf": response.headers.get("X-CSRF-TOKEN"),
-        "session": response.cookies['SESSION']
-    }
-
-
-def get_login_session():
-    url = "http://test:8083/index.html"
-    prework = _get_csrf_and_session()
-    headers = {
-        "Content-Type": "application/x-www-form-urlencoded",
-        "Cookie": "SESSION=" + prework["session"],
-    }
-    payload = {"_csrf": prework["csrf"], "password": "123321", "username": "huang"}
-    response = requests.post(url, headers=headers, data=payload)
-    # 302
-    history = response.history[0]
-    return {"login_session": history.cookies.get('SESSION')}
+def base_url():
+    HOST = "http://test"
+    PORT = 8080
+    return f"{HOST}:{PORT}"
 
 
 def check_bytes(content):
     return content.decode() == 'ok'
+
+
+def read_vote_db(index):
+    return json.dumps(data[index]["content"])
