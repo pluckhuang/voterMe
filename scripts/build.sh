@@ -5,3 +5,5 @@
 echo "build project..."
 
 ./gradlew build -x test
+
+cd uitest && mvn clean package && cd ..

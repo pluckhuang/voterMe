@@ -12,3 +12,5 @@ rm -rf apitest/logs
 rm -rf apitest/reports
 
 fd __pycache__ . -x rm -rf
+
+cd uitest && mvn clean && cd ..

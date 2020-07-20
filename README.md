@@ -34,15 +34,15 @@ pwd: 123321
 ## 后端使用组件
 
 ```
-spring boot
+Spring boot
 -jpa
 -security
 -json
 
-redis
-mysql
+Redis
+Mysql
 com.google.guava:guava:27.1-jre
-swagger
+Swagger
 ```
 
 
@@ -68,6 +68,7 @@ http://localhost:8080/swagger-ui.html
 
 - 代码覆盖率使用 jacoco
 - 接口测试使用 httprunner (使用 charles 拦截请求，构造har，转换为.yml 做为测试用例。)
+- GUI测试使用 selenium (构造页面对象模型 + 业务流程抽象，调用 WebDriver 验证。)
 - 性能测试使用 locust
 
 ```
@@ -98,22 +99,25 @@ apitest
     └── with_backend_data_request.yml
 ```
 
-- cpu/io/mem 监控使用 glances
+```
+uitest 为UI测试目录。使用 maven 构建。
 
-
+目录结构：
+├── UitestApplication.java
+├── flows
+│   ├── LoginFlow.java
+│   ├── LoginParams.java
+│   ├── LogoutFlow.java
+│   └── VoteFlow.java
+└── pages
+    ├── LoginPage.java
+    ├── LogoutPage.java
+    └── VoteIndexPage.java
+```
 
 ```
-python requirements：
 
-- httprunner==3.1.3
-- locust=1.1.1
-- Glances=3.1.4.1
-
-```
-
-```
-
-scripts 目录为使用脚本
+scripts 目录为整体使用脚本
 
 ├── build.sh
 ├── clean.sh
@@ -174,4 +178,15 @@ make gen
 ### 性能测试
 ```
 locusts -f apitest/performance_test
+```
+
+- cpu/io/mem 监控使用 glances
+
+```
+python requirements：
+
+- httprunner==3.1.3
+- locust=1.1.1
+- Glances=3.1.4.1
+
 ```
