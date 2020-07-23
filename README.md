@@ -27,6 +27,7 @@
 
 pwd: 123321
 
+
 ```
 
 
@@ -35,20 +36,17 @@ pwd: 123321
 
 ```
 Spring boot
--jpa
--security
--json
-
-Redis
-Mysql
-com.google.guava:guava:27.1-jre
-Swagger
+-持久化使用 jpa
+-权限验证使用 security
+-Redis 用来存储 session， 配置： appendonly yes
+-json api使用 json 序列化
+-Mysql 主要表结构路径：/src/main/resources/sql/init.sql
+-com.google.guava:guava:27.1-jre
+-Swagger 接口文档管理, url: /swagger-ui.html
 ```
 
 
-
 ## 前端使用组件
-
 ```
 JQuery
 Ajax
@@ -56,13 +54,6 @@ Bootstrap
 Chart
 ```
 
-
-
-## 接口文档使用 swagger
-
-```
-http://localhost:8080/swagger-ui.html
-```
 
 ## 测试
 
@@ -175,15 +166,16 @@ make gen
 
 
 
-### 性能测试
+### 性能测试 这里尝试使用locust
 ```
-locusts -f apitest/performance_test
+locusts -t 20s -r 20 -u 2000 --headless -f apitest/performance_test/get_login_session.yml
+
 ```
 
 - cpu/io/mem 监控使用 glances
 
 ```
-python requirements：
+python 相关 requirements：
 
 - httprunner==3.1.3
 - locust=1.1.1
