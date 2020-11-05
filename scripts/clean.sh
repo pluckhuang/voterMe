@@ -6,8 +6,8 @@ echo "clean files..."
 
 rm out.log
 
-rm -rf jacoco/src/
-rm -rf jacoco/report/
+rm -rf jacoco/src/*
+rm -rf jacoco/report/*
 rm -rf apitest/logs
 rm -rf apitest/reports
 
