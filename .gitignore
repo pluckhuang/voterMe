@@ -43,3 +43,6 @@ apitest/testcases/*.py
 reports/*
 
 uitest/target/*
+
+
+.java-version
